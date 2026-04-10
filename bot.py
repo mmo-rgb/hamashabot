@@ -9,7 +9,7 @@ from telegram.ext import (
 #  НАСТРОЙКИ
 # ═══════════════════════════════════════════
 TOKEN = "8674017448:AAF0DE0OQMVFzGCGSKYV1P30Rfezd-LGTN0"
-SHOP = "HAMASHA PARFUM"
+SHOP = "МАКСИМ ГОРНЫЙ"
 MANAGER = "@sulik"
 DATA = "data"
 
