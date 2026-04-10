@@ -14,13 +14,13 @@ MANAGER = "@sulik"
 DATA = "data"
 
 DELIVERY_TEXT = (
-    "🚚  ДОСТАВКА\n\n"
-    "▸ По городу — бесплатно\n"
-    "▸ По России — от 300 ₽ (СДЭК / Почта)\n"
-    "▸ Срок — 1-5 дней\n\n"
-    "💳  ОПЛАТА\n\n"
-    "▸ Наличные при получении\n"
-    "▸ Перевод на карту\n"
+    "📦 ДОСТАВКА\n\n"
+    "по городу — бесплатно, привезём быстро 🔥\n"
+    "по России — от 300₽ (СДЭК / Почта)\n"
+    "сроки — 1-5 дней\n\n"
+    "💳 ОПЛАТА\n\n"
+    "нал при получении\n"
+    "перевод на карту\n"
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -88,18 +88,17 @@ async def reply(q, text, kb=None, **kw):
 #  /start — ГЛАВНАЯ
 # ═══════════════════════════════════════════
 WELCOME = (
-    f"✦  {SHOP}  ✦\n"
-    f"━━━━━━━━━━━━━━━━━━━━\n\n"
-    f"Парфюмерия на любой вкус.\n"
-    f"Оригиналы и селектив."
+    f"🖤  {SHOP}  🖤\n\n"
+    f"ароматы, которые запоминают.\n"
+    f"оригиналы · селектив · ниша"
 )
 
 HOME_KB = [
-    [btn("🛍  Каталог", "catalog")],
-    [btn("🛒  Корзина", "cart"), btn("📦  Мои заказы", "my_orders")],
-    [btn("🔥  Акции", "promos")],
-    [btn("🚚  Доставка и оплата", "delivery")],
-    [btn("💬  Написать нам", "contact")],
+    [btn("🔥 каталог", "catalog")],
+    [btn("🛒 корзина", "cart"), btn("📦 мои заказы", "my_orders")],
+    [btn("💎 акции", "promos")],
+    [btn("🚀 доставка", "delivery")],
+    [btn("💬 написать", "contact")],
 ]
 
 async def cmd_start(update: Update, ctx):
@@ -117,7 +116,7 @@ async def catalog(q, ctx):
     await q.answer()
     cats = categories(); pp = [p for p in products() if p.get("visible", True)]
     if not pp:
-        return await reply(q, "Каталог обновляется, загляните позже 🌸", [back()])
+        return await reply(q, "каталог пока пустой, скоро всё будет 🤙", [back()])
     kb = []
     if cats:
         for c in cats:
@@ -131,7 +130,7 @@ async def catalog(q, ctx):
             label = f'{p["name"]}  ·  {price(p["price"])}'
             kb.append([btn(label, f'p:{p["id"]}')])
     kb.append(back())
-    await reply(q, f"✦  КАТАЛОГ  ✦\n━━━━━━━━━━━━━━━━━━━━", kb)
+    await reply(q, f"🔥 каталог\n─ ─ ─ ─ ─ ─ ─ ─ ─ ─", kb)
 
 async def cat_list(q, ctx):
     await q.answer()
@@ -144,7 +143,7 @@ async def cat_list(q, ctx):
         lab = f'{p["name"]}  ·  {price(p["price"])}'
         kb.append([btn(lab, f'p:{p["id"]}')])
     kb.append(back("catalog", "◀ Каталог"))
-    await reply(q, f"✦  {title.upper()}  ✦\n━━━━━━━━━━━━━━━━━━━━", kb)
+    await reply(q, f"🔥 {title.lower()}\n─ ─ ─ ─ ─ ─ ─ ─ ─ ─", kb)
 
 async def product_card(q, ctx):
     await q.answer()
@@ -152,21 +151,21 @@ async def product_card(q, ctx):
     p = next((x for x in products() if x["id"] == pid), None)
     if not p: return await reply(q, "Товар не найден", [back("catalog")])
 
-    lines = [f"✦  {p['name'].upper()}  ✦", "━━━━━━━━━━━━━━━━━━━━", ""]
+    lines = [f"🖤  {p['name'].upper()}", "─ ─ ─ ─ ─ ─ ─ ─ ─ ─", ""]
     if p.get("desc"):    lines.append(p["desc"])
-    if p.get("volume"):  lines.append(f"📏  {p['volume']}")
-    if p.get("notes"):   lines.append(f"🌿  Ноты: {p['notes']}")
-    if p.get("gender"):  lines.append(f"👤  {p['gender']}")
+    if p.get("volume"):  lines.append(f"объём: {p['volume']}")
+    if p.get("notes"):   lines.append(f"ноты: {p['notes']}")
+    if p.get("gender"):  lines.append(f"{p['gender']}")
     lines.append("")
     if p.get("old_price"):
-        lines.append(f"💰  {price(p['price'])}  (было {price(p['old_price'])})")
+        lines.append(f"💰 {price(p['price'])}  (было {price(p['old_price'])})")
     else:
-        lines.append(f"💰  {price(p['price'])}")
+        lines.append(f"💰 {price(p['price'])}")
     text = "\n".join(lines)
 
     kb = [
-        [btn("🛒  В корзину", f"add:{pid}"), btn("⚡ Купить", f"buy:{pid}")],
-        [btn("◀ Каталог", "catalog")],
+        [btn("🛒 в корзину", f"add:{pid}"), btn("⚡ купить", f"buy:{pid}")],
+        [btn("◀ назад", "catalog")],
     ]
     # Удаляем старое и шлём с фото если есть
     try: await q.message.delete()
@@ -193,9 +192,9 @@ async def cart_view(q, ctx):
     await q.answer()
     uid = q.from_user.id; cart = get_cart(uid); pp = products()
     if not cart:
-        return await reply(q, "Корзина пуста 🛒", [[btn("🛍  В каталог", "catalog")], back()])
+        return await reply(q, "корзина пустая 🛒", [[btn("🔥 в каталог", "catalog")], back()])
 
-    lines = ["✦  КОРЗИНА  ✦", "━━━━━━━━━━━━━━━━━━━━", ""]
+    lines = ["🛒 корзина", "─ ─ ─ ─ ─ ─ ─ ─ ─ ─", ""]
     total = 0; kb = []
     for i in cart:
         p = next((x for x in pp if x["id"] == i["pid"]), None)
@@ -203,9 +202,9 @@ async def cart_view(q, ctx):
         s = p["price"] * i["qty"]; total += s
         lines.append(f'▸ {p["name"]}  ×{i["qty"]}  —  {price(s)}')
         kb.append([btn("➖", f"c-:{i['pid']}"), btn(f'{i["qty"]} шт', "noop"), btn("➕", f"c+:{i['pid']}")])
-    lines += ["", "━━━━━━━━━━━━━━━━━━━━", f"Итого: {price(total)}"]
-    kb.append([btn("📦  Оформить заказ", "checkout")])
-    kb.append([btn("🗑  Очистить", "cart_clear")])
+    lines += ["", "─ ─ ─ ─ ─ ─ ─ ─ ─ ─", f"итого: {price(total)}"]
+    kb.append([btn("📦 оформить", "checkout")])
+    kb.append([btn("🗑 очистить", "cart_clear")])
     kb.append(back())
     await reply(q, "\n".join(lines), kb)
 
@@ -234,18 +233,18 @@ async def checkout_start(q, ctx):
     await q.answer()
     if not get_cart(q.from_user.id):
         return await reply(q, "Корзина пуста.", [back()])
-    await reply(q, "📦  ОФОРМЛЕНИЕ ЗАКАЗА\n━━━━━━━━━━━━━━━━━━━━\n\nВаше имя:")
+    await reply(q, "📦 оформляем заказ\n─ ─ ─ ─ ─ ─ ─ ─ ─ ─\n\nкак тебя зовут?")
     ctx.user_data["order"] = {"uid": q.from_user.id, "uname": q.from_user.username}
     return S_NAME
 
 async def o_name(update, ctx):
     ctx.user_data["order"]["name"] = update.message.text
-    await update.message.reply_text("📱  Номер телефона:")
+    await update.message.reply_text("📱 номер телефона:")
     return S_PHONE
 
 async def o_phone(update, ctx):
     ctx.user_data["order"]["phone"] = update.message.text
-    await update.message.reply_text("📍  Адрес доставки (или «самовывоз»):")
+    await update.message.reply_text("📍 куда доставить? (или «самовывоз»):")
     return S_ADDR
 
 async def o_done(update, ctx):
@@ -268,10 +267,10 @@ async def o_done(update, ctx):
     oo = orders(); oo.append(order); save_orders(oo); clear_cart(uid)
 
     # Клиенту
-    lines = [f"✅  Заказ #{oid} принят!", "━━━━━━━━━━━━━━━━━━━━", ""]
+    lines = [f"✅ заказ #{oid} принят!", "─ ─ ─ ─ ─ ─ ─ ─ ─ ─", ""]
     for i in items: lines.append(f"▸ {i['name']}  ×{i['qty']}  —  {price(i['price']*i['qty'])}")
-    lines += ["", f"Итого: {price(total)}", "", f"📱  {info['name']}  ·  {info['phone']}",
-              f"📍  {info['address']}", "", "Мы свяжемся с вами для подтверждения!"]
+    lines += ["", f"итого: {price(total)}", "", f"📱 {info['name']}  ·  {info['phone']}",
+              f"📍 {info['address']}", "", "скоро свяжемся с тобой 🤙"]
     await update.message.reply_text("\n".join(lines),
         reply_markup=InlineKeyboardMarkup([back()]))
 
@@ -307,9 +306,9 @@ async def buy_now(q, ctx):
 async def my_orders(q, ctx):
     await q.answer()
     oo = [o for o in orders() if o["uid"] == q.from_user.id]
-    if not oo: return await reply(q, "У вас пока нет заказов.", [back()])
-    st = {"new":"🆕 Новый","confirmed":"✅ Принят","shipped":"🚚 Отправлен","delivered":"📦 Доставлен","cancelled":"❌ Отменён"}
-    lines = ["✦  МОИ ЗАКАЗЫ  ✦", "━━━━━━━━━━━━━━━━━━━━", ""]
+    if not oo: return await reply(q, "заказов пока нет", [back()])
+    st = {"new":"🆕 новый","confirmed":"✅ принят","shipped":"🚚 в пути","delivered":"📦 доставлен","cancelled":"❌ отменён"}
+    lines = ["📦 мои заказы", "─ ─ ─ ─ ─ ─ ─ ─ ─ ─", ""]
     for o in oo[-10:]:
         lines.append(f'#{o["id"]}  ·  {price(o["total"])}  ·  {st.get(o["status"],o["status"])}')
         lines.append(f'     {o.get("date","")}')
@@ -321,15 +320,15 @@ async def delivery(q, ctx):
 
 async def contact(q, ctx):
     await q.answer()
-    await reply(q, f"💬  Напишите нам — ответим быстро!\n\nМенеджер: {MANAGER}",
-        [[url_btn("✉️  Написать", f"https://t.me/{MANAGER.lstrip('@')}")], back()])
+    await reply(q, f"💬 пиши — ответим быстро\n\n{MANAGER}",
+        [[url_btn("✉️ написать", f"https://t.me/{MANAGER.lstrip('@')}")], back()])
 
 async def promos_view(q, ctx):
     await q.answer()
     pp = promos()
     if not pp:
-        return await reply(q, "Сейчас акций нет.\nСледите за обновлениями! 🌸", [back()])
-    lines = ["🔥  АКЦИИ  🔥", "━━━━━━━━━━━━━━━━━━━━", ""]
+        return await reply(q, "акций пока нет, но скоро будут 👀", [back()])
+    lines = ["💎 акции", "─ ─ ─ ─ ─ ─ ─ ─ ─ ─", ""]
     for p in pp:
         lines.append(f'✦  {p["title"]}')
         if p.get("desc"): lines.append(f'    {p["desc"]}')
@@ -346,7 +345,7 @@ async def order_status_change(q, ctx):
     o = next((x for x in oo if x["id"] == oid), None)
     if not o: await q.answer("Не найден"); return
     o["status"] = status; save_orders(oo)
-    st_text = {"confirmed":"✅ принят","shipped":"🚚 отправлен","delivered":"📦 доставлен","cancelled":"❌ отменён"}
+    st_text = {"confirmed":"✅ принят","shipped":"🚚 едет к тебе","delivered":"📦 доставлен","cancelled":"❌ отменён"}
     await q.answer(f"Статус → {status}")
     try: await ctx.bot.send_message(o["uid"], f"Заказ #{oid} — {st_text.get(status, status)}!")
     except: pass
@@ -689,7 +688,7 @@ async def bc_send(u, ctx):
     text = u.message.text; oo = orders()
     uids = list(set(o["uid"] for o in oo)); sent = 0
     for uid in uids:
-        try: await ctx.bot.send_message(uid, f"✦ {SHOP} ✦\n\n{text}"); sent += 1
+        try: await ctx.bot.send_message(uid, f"🖤 {SHOP}\n\n{text}"); sent += 1
         except: pass
     await u.message.reply_text(f"✅ Отправлено: {sent}/{len(uids)}",
         reply_markup=InlineKeyboardMarkup([[btn("◀ Админ","a:home")]]))
